@@ -1,6 +1,12 @@
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { RootStackParamList } from './App';
+import { useNavigation } from '@react-navigation/native';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
 
 interface Processo {
   id: string;
@@ -14,12 +20,15 @@ const processosMock: Processo[] = [
 ];
 
 export default function TelaPrincipal() {
+  const navigation = useNavigation<NavigationProp>();
+
+
   const renderItem = ({ item }: { item: Processo }) => (
     <View style={styles.cardProcesso}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.titulo}>{item.titulo}</Text>
         <TouchableOpacity>
-          <Icon name="star-outline" size={20} color="#d4af37" />
+          <Icon name="star-outline" size={20} color="#d4af37" onPress={() => navigation.navigate('Processo')}/>
         </TouchableOpacity>
       </View>
       <Text style={styles.status}>{item.status}</Text>
@@ -50,11 +59,14 @@ export default function TelaPrincipal() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
-
-      {/* Botão de adicionar */}
-      <TouchableOpacity style={styles.botaoAdicionar} onPress={()=>Alert.alert("Adicionando Processo!")}>
-        <Icon name="add" size={30} color='white' />
+      <TouchableOpacity style={styles.botaoAdicionar} onPress={() => navigation.navigate('Criação')}>
+        <Icon name="add" size={30} color="black" />
       </TouchableOpacity>
+
+      {/* Botão de adicionar
+      <TouchableOpacity style={styles.botaoAdicionar} onPress={() => Alert.alert("Adicionando Processo!")}>
+        <Icon name="add" size={30} color='white' />
+      </TouchableOpacity> */}
 
       {/* Barra de navegação inferior */}
       <View style={styles.barraNavegacao}>

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "24675819004",
+    "project_id": "jus-unifor",
+    "storage_bucket": "jus-unifor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:24675819004:android:bdaa11201c272f0baee679",
+        "android_client_info": {
+          "package_name": "Desenv_plataformas.moveis"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK-vQhbp1J_TJ8c4oimC_jT504JPxSO7Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:24675819004:android:3d18368b70ffa87eaee679",
+        "android_client_info": {
+          "package_name": "com.t19745"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK-vQhbp1J_TJ8c4oimC_jT504JPxSO7Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
