@@ -12,8 +12,15 @@ export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Criação: undefined;
-  Cadastro: undefined; // 👈 Adicione essa rota
-  Processo: undefined;
+  Cadastro: undefined; 
+  Processo: { //processo espera um parametro com dados!!
+    titulo: string; // corresponde a nome_Processo
+    status: string; // corresponde a status_Processo
+    id: string; // corresponde a numero_Processo
+    tipo: string;   // corresponde a tipo_Processo
+    area: string;   // corresponde a area_Processo
+  };  
+
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

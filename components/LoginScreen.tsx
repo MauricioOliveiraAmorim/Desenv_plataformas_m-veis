@@ -13,14 +13,15 @@ import { useNavigation } from '@react-navigation/native';
 import styles from './Styles';
 import { RootStackParamList } from './App';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { collection, getDocs } from '@react-native-firebase/firestore';
+import { db } from './firebaseConfig';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const navigation = useNavigation<NavigationProp>();
 
-  const [name] = useState('Arthur');
-  const [password] = useState('1234');
+
   const [entradaname, setEntradaname] = useState('');
   const [entradapassword, setEntradapassword] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -40,16 +41,34 @@ export default function LoginScreen() {
 
   const handleLogin = () => {
     setCarregando(true);
-
-    setTimeout(() => {
-      setCarregando(false);
-      if (entradaname === name && entradapassword === password) {
-        navigation.navigate('Home');
-      } else {
-        Alert.alert('Erro', 'Usuário ou senha incorretos!');
+  
+    setTimeout(async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'cadastros'));
+  
+        let usuarioValido = false;
+  
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.nomeUser === entradaname && data.senhaUser === entradapassword) {
+            usuarioValido = true;
+          }
+        });
+  
+        if (usuarioValido) {
+          navigation.navigate('Home');
+        } else {
+          Alert.alert('Erro', 'Usuário ou senha incorretos!');
+        }
+      } catch (error) {
+        console.error('Erro na autenticação:', error);
+        Alert.alert('Erro', 'Algo deu errado ao autenticar.');
+      } finally {
+        setCarregando(false); // sempre para de carregar ao final
       }
-    }, 1500); // Simula tempo de resposta
+    }, 1500);
   };
+  
 
   const animarBotao = () => {
     Animated.sequence([

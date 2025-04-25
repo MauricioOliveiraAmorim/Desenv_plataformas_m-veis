@@ -10,13 +10,22 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './App';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Processo'>;
+
+// Define o tipo da rota para acessar os parâmetros passados via navigation
+type RouteProps = RouteProp<RootStackParamList, 'Processo'>;
 
 
 export default function TelaProcesso() {
   const navigation = useNavigation<NavigationProp>();
+
+  const route = useRoute<RouteProps>();
+
+  //trazendo os paremetros de dados recebidos da tela anterior (vindo da FlatList)
+  const { titulo, status, id, tipo, area } = route.params;
+
 
   const handleEditar = (event: GestureResponderEvent) => {
     console.log('Editar processo...');
@@ -37,19 +46,19 @@ export default function TelaProcesso() {
 
         <View style={styles.infoBox}>
           <Text style={styles.label}>Nome do Processo</Text>
-          <Text style={styles.value}>EXEMPLO</Text>
+          <Text style={styles.value}>{titulo}</Text>
 
           <Text style={styles.label}>Número do Processo</Text>
-          <Text style={styles.value}>EXEMPLO</Text>
+          <Text style={styles.value}>{id}</Text>
 
           <Text style={styles.label}>Tipo do Processo</Text>
-          <Text style={styles.value}>EXEMPLO</Text>
+          <Text style={styles.value}>{tipo}</Text>
 
           <Text style={styles.label}>Área do Direito</Text>
-          <Text style={styles.value}>EXEMPLO</Text>
+          <Text style={styles.value}>{area}</Text>
 
           <Text style={styles.label}>Status do Processo</Text>
-          <Text style={styles.value}>EXEMPLO</Text>
+          <Text style={styles.value}>{status}</Text>
         </View>
 
         <View style={styles.botoesContainer}>
@@ -69,7 +78,7 @@ export default function TelaProcesso() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#000', // Fundo preto padrão da aplicação
   },
   content: {
     padding: 20,
@@ -78,7 +87,7 @@ const styles = StyleSheet.create({
   },
   tituloSecao: {
     fontSize: 18,
-    color: '#d4af37',
+    color: '#d4af37', // Dourado padrão
     fontWeight: 'bold',
     borderBottomColor: '#d4af37',
     borderBottomWidth: 1,
@@ -145,5 +154,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-
 });
+

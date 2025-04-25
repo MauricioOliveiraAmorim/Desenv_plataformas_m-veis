@@ -26,11 +26,11 @@ export default function TelaCriacao() {
   const registrarProcesso = async () => {
     if (nome_process && numero_process && tipo_process && area_process && status_process) {
       const novoProcesso = {
-        nome: nome_process,
-        numero: numero_process,
-        tipo: tipo_process,
-        area: area_process,
-        status: status_process,
+        nome_Processo: nome_process,
+        numero_Processo: numero_process,
+        tipo_Processo: tipo_process,
+        area_Processo: area_process,
+        status_Processo: status_process,
         data: new Date().toISOString(),
       };
       try {
@@ -51,20 +51,6 @@ export default function TelaCriacao() {
       alert('Por favor, preencha todos os campos.');
     }
   };
-
-  // const criarProcesso = () => {
-  //   if (!nome || !numero || !tipo || !area || !status) {
-  //     Alert.alert('Erro', 'Preencha todos os campos!');
-  //   } else {
-  //     // Aqui você pode salvar os dados ou enviar para backend
-  //     Alert.alert('Sucesso', 'Processo criado com sucesso!');
-  //     setNome('');
-  //     setNumero('');
-  //     setTipo('');
-  //     setArea('');
-  //     setStatus('');
-  //   }
-  // };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

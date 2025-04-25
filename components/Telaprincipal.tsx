@@ -1,39 +1,75 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from './App';
 import { useNavigation } from '@react-navigation/native';
+import { db } from './firebaseConfig';
+import { collection, getDocs } from '@react-native-firebase/firestore';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 
 interface Processo {
-  id: string;
   titulo: string;
   status: string;
+  id: string;
+  tipo: string;
+  area: string;
 }
 
-const processosMock: Processo[] = [
-  { id: '1', titulo: 'Processo 1', status: 'Em andamento' },
-  { id: '2', titulo: 'Processo 2', status: 'Concluído' },
-];
+const MostrarProcessos = async (): Promise<Processo[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'processos'));
+    const processos: Processo[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      processos.push({
+        id: data.numero_Processo,
+        titulo: data.nome_Processo,
+        status: data.status_Processo,
+        tipo: data.tipo_Processo,
+        area: data.area_Processo,
+      });
+    });
+    return processos;
+  } catch (error) {
+    console.error('Erro ao buscar processos:', error);
+    return [];
+  }
+};
 
 export default function TelaPrincipal() {
   const navigation = useNavigation<NavigationProp>();
 
+  const [processos, setProcessos] = useState<Processo[]>([]);
 
-  const renderItem = ({ item }: { item: Processo }) => (
+  useEffect(() => {
+    const carregarProcessos = async () => {
+      const dados = await MostrarProcessos();
+      setProcessos(dados);
+    }
+    carregarProcessos();
+  }, []);
+  const renderItem = ({ item }: { item: Processo }) => (//renderizar cada item da lista.
     <View style={styles.cardProcesso}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={styles.headerProcesso}>
         <Text style={styles.titulo}>{item.titulo}</Text>
-        <TouchableOpacity>
-          <Icon name="star-outline" size={20} color="#d4af37" onPress={() => navigation.navigate('Processo')}/>
+        <TouchableOpacity onPress={() => navigation.navigate('Processo',{
+          titulo: item.titulo,
+          status: item.status,
+          id: item.id,
+          tipo: item.tipo,
+          area: item.area,
+        })}>
+          <Icon name="star-outline" size={20} color="#d4af37" />
         </TouchableOpacity>
       </View>
       <Text style={styles.status}>{item.status}</Text>
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
@@ -54,7 +90,7 @@ export default function TelaPrincipal() {
       // Ela só carrega os itens visíveis, evitando lentidão com listas grandes.
       // 'data' é a lista, 'renderItem' define como mostrar cada item, e 'keyExtractor' dá uma chave única pra cada um. */}
       <FlatList
-        data={processosMock}
+        data={processos}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -62,11 +98,6 @@ export default function TelaPrincipal() {
       <TouchableOpacity style={styles.botaoAdicionar} onPress={() => navigation.navigate('Criação')}>
         <Icon name="add" size={30} color="black" />
       </TouchableOpacity>
-
-      {/* Botão de adicionar
-      <TouchableOpacity style={styles.botaoAdicionar} onPress={() => Alert.alert("Adicionando Processo!")}>
-        <Icon name="add" size={30} color='white' />
-      </TouchableOpacity> */}
 
       {/* Barra de navegação inferior */}
       <View style={styles.barraNavegacao}>
@@ -138,4 +169,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
   },
+  headerProcesso: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  
 });
