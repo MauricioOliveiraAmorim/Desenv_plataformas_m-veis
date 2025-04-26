@@ -39,7 +39,38 @@ loginButtonText: {
   color: '#000',
   fontWeight: 'bold',
   fontSize: 16,
-}
+},
+modalContainer: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.8)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+modalBox: {
+  backgroundColor: '#1c1c1c',
+  padding: 30,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: '#d4af37',
+  alignItems: 'center',
+},
+textoModal: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 20,
+  textAlign: 'center',
+},
+fecharBotao: {
+  backgroundColor: '#d4af37',
+  paddingVertical: 10,
+  paddingHorizontal: 30,
+  borderRadius: 8,
+},
+fecharTexto: {
+  fontWeight: 'bold',
+  color: '#000',
+  fontSize: 16,
+},
 
 });
 

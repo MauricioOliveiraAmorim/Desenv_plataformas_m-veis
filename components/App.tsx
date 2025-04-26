@@ -7,6 +7,7 @@ import TelaPrincipal from './Telaprincipal';
 import TelaCriacao from './TelaCriacao';
 import TelaCadastro from './TelaCadastro';
 import TelaProcesso from './TelaProcesso';
+import TelaEditarProcesso from './TelaEditarProcesso';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -19,7 +20,17 @@ export type RootStackParamList = {
     id: string; // corresponde a numero_Processo
     tipo: string;   // corresponde a tipo_Processo
     area: string;   // corresponde a area_Processo
+    numero: string; // ← novo campo obrigatório
   };  
+  Editar: {
+    id: string;
+    titulo: string;
+    status: string;
+    tipo: string;
+    area: string;
+    numero: string;
+  };
+  
 
 };
 
@@ -34,6 +45,7 @@ export default function App() {
         <Stack.Screen name="Criação" component={TelaCriacao} />
         <Stack.Screen name="Cadastro" component={TelaCadastro} />
         <Stack.Screen name="Processo" component={TelaProcesso} />
+        <Stack.Screen name="Editar" component={TelaEditarProcesso} />
       </Stack.Navigator>
     </NavigationContainer>
   );

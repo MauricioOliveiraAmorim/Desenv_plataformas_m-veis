@@ -24,11 +24,18 @@ export default function TelaProcesso() {
   const route = useRoute<RouteProps>();
 
   //trazendo os paremetros de dados recebidos da tela anterior (vindo da FlatList)
-  const { titulo, status, id, tipo, area } = route.params;
-
+  const { titulo, status, id, tipo, area, numero } = route.params;
 
   const handleEditar = (event: GestureResponderEvent) => {
-    console.log('Editar processo...');
+    navigation.navigate('Editar', {
+      id,
+      titulo,
+      status,
+      tipo,
+      area,
+      numero
+    });
+
   };
 
   const handleVerAuditoria = (event: GestureResponderEvent) => {
@@ -49,7 +56,7 @@ export default function TelaProcesso() {
           <Text style={styles.value}>{titulo}</Text>
 
           <Text style={styles.label}>Número do Processo</Text>
-          <Text style={styles.value}>{id}</Text>
+          <Text style={styles.value}>{numero}</Text>
 
           <Text style={styles.label}>Tipo do Processo</Text>
           <Text style={styles.value}>{tipo}</Text>

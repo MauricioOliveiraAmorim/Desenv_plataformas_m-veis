@@ -7,6 +7,7 @@ import {
   Alert,
   Animated,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -21,15 +22,20 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 export default function LoginScreen() {
   const navigation = useNavigation<NavigationProp>();
 
-
   const [entradaname, setEntradaname] = useState('');
   const [entradapassword, setEntradapassword] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
 
-  // Animações
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleButton = useRef(new Animated.Value(1)).current;
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [mensagemModal, setMensagemModal] = useState('');
+
+  const fecharModal = () => {
+    setModalVisible(false);
+  };
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -41,34 +47,34 @@ export default function LoginScreen() {
 
   const handleLogin = () => {
     setCarregando(true);
-  
+
     setTimeout(async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'cadastros'));
-  
+
         let usuarioValido = false;
-  
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           if (data.nomeUser === entradaname && data.senhaUser === entradapassword) {
             usuarioValido = true;
           }
         });
-  
+
         if (usuarioValido) {
           navigation.navigate('Home');
         } else {
-          Alert.alert('Erro', 'Usuário ou senha incorretos!');
+          setMensagemModal('Usuários ou senha incorretos!');
+          setModalVisible(true);
         }
       } catch (error) {
         console.error('Erro na autenticação:', error);
         Alert.alert('Erro', 'Algo deu errado ao autenticar.');
       } finally {
-        setCarregando(false); // sempre para de carregar ao final
+        setCarregando(false);
       }
     }, 1500);
   };
-  
 
   const animarBotao = () => {
     Animated.sequence([
@@ -119,6 +125,24 @@ export default function LoginScreen() {
           />
         </TouchableOpacity>
       </View>
+
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisible}
+        onRequestClose={fecharModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={[styles.textoModal, { color: '#ff4444' }]}>
+              {mensagemModal}
+            </Text>
+            <TouchableOpacity onPress={fecharModal} style={styles.fecharBotao}>
+              <Text style={styles.fecharTexto}>FECHAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {carregando ? (
         <ActivityIndicator size="large" color="#d4af37" style={{ marginTop: 20 }} />

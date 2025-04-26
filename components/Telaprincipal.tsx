@@ -16,6 +16,7 @@ interface Processo {
   id: string;
   tipo: string;
   area: string;
+  numero: string; 
 }
 
 const MostrarProcessos = async (): Promise<Processo[]> => {
@@ -26,12 +27,13 @@ const MostrarProcessos = async (): Promise<Processo[]> => {
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       processos.push({
-        id: data.numero_Processo,
+        id: doc.id, // ← agora é o ID do documento Firestore, não o número do processo
         titulo: data.nome_Processo,
         status: data.status_Processo,
         tipo: data.tipo_Processo,
         area: data.area_Processo,
-      });
+        numero: data.numero_Processo, // ← novo campo
+      });      
     });
     return processos;
   } catch (error) {
@@ -62,8 +64,9 @@ export default function TelaPrincipal() {
           id: item.id,
           tipo: item.tipo,
           area: item.area,
+          numero: item.numero
         })}>
-          <Icon name="star-outline" size={20} color="#d4af37" />
+          <Icon name="ellipsis-horizontal-outline" size={20} color="#d4af37" />
         </TouchableOpacity>
       </View>
       <Text style={styles.status}>{item.status}</Text>

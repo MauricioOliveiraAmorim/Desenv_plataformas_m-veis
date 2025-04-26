@@ -1,27 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { RootStackParamList } from './App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { db } from './firebaseConfig';
 
-
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Criação'>;
 
-
 export default function TelaCriacao() {
-    const navigation = useNavigation<NavigationProp>();
-    
+  const navigation = useNavigation<NavigationProp>();
+
   const [nome_process, setNome_process] = useState('');
   const [numero_process, setNumero_process] = useState('');
   const [tipo_process, setTipo_process] = useState('');
   const [area_process, setArea_process] = useState('');
   const [status_process, setStatus_process] = useState('');
 
-  const navegandoComAlert = () =>{
-    navigation.navigate('Home')
-    Alert.alert("Criação do processo cancelado!")
-  }
+  const [modalVisible, setModalVisible] = useState(false);
+  const [mensagemModal, setMensagemModal] = useState('');
+  const [sucesso, setSucesso] = useState(false);
+  const [faltante, setFaltante] = useState(false);
+
+  const fecharModal = () => {
+    setModalVisible(false);
+    if (sucesso) {
+      navigation.navigate('Home');
+    } else if (faltante == true) {
+      setFaltante(false); // ← adicionar isso para limpar o estado 
+      return;
+    }else if(!sucesso){
+      navigation.navigate('Home');
+    }
+  };
+
+  const processoCancelado = () => {
+    setMensagemModal('Criação do processo cancelada!');
+    setSucesso(false);
+    setFaltante(false);
+    setModalVisible(true);
+  };
 
   const registrarProcesso = async () => {
     if (nome_process && numero_process && tipo_process && area_process && status_process) {
@@ -36,19 +53,29 @@ export default function TelaCriacao() {
       try {
         console.log('Firestore DB:', db);
         await db.collection('processos').add(novoProcesso);
-        Alert.alert('Sucesso', 'Processo registrado com sucesso!', [
-          { text: 'OK', onPress: () => navigation.navigate('Home') },
-        ]);        
+
+        setMensagemModal('Processo criado com sucesso!');
+        setSucesso(true);
+        setModalVisible(true);
+        setFaltante(false);
+
+        // Limpar campos após sucesso
         setNome_process('');
         setNumero_process('');
         setTipo_process('');
         setArea_process('');
         setStatus_process('');
       } catch (error) {
-        alert('Erro!');
+        setMensagemModal('Erro ao criar o processo!');
+        setSucesso(false);
+        setModalVisible(true);
+        setFaltante(false);
       }
     } else {
-      alert('Por favor, preencha todos os campos.');
+      setMensagemModal('Por favor, preencha todos os campos!');
+      setFaltante(true);//caso falte algum, ainda fica para editar
+      setSucesso(false);
+      setModalVisible(true);
     }
   };
 
@@ -94,13 +121,33 @@ export default function TelaCriacao() {
       />
 
       <View style={styles.botoesContainer}>
-        <TouchableOpacity style={styles.botaoCancelar} onPress={navegandoComAlert}>
+        <TouchableOpacity style={styles.botaoCancelar} onPress={processoCancelado}>
           <Text style={styles.botaoTextoCancelar}>CANCELAR</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.botaoCriar} onPress={registrarProcesso}>
           <Text style={styles.botaoTextoCriar}>CRIAR</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal Personalizado */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisible}
+        onRequestClose={fecharModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={[styles.textoModal, { color: sucesso ? '#00ff00' : '#ff4444' }]}>
+              {mensagemModal}
+            </Text>
+            <TouchableOpacity onPress={fecharModal} style={styles.fecharBotao}>
+              <Text style={styles.fecharTexto}>FECHAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -156,8 +203,35 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
   },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#1c1c1c',
+    padding: 30,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    alignItems: 'center',
+  },
+  textoModal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  fecharBotao: {
+    backgroundColor: '#d4af37',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  fecharTexto: {
+    fontWeight: 'bold',
+    color: '#000',
+    fontSize: 16,
+  },
 });
-function alert(arg0: string) {
-  throw new Error('Function not implemented.');
-}
-
