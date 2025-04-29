@@ -4,6 +4,7 @@ import { RootStackParamList } from './App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { db } from './firebaseConfig';
+import { Picker } from '@react-native-picker/picker';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Criação'>;
 
@@ -28,7 +29,7 @@ export default function TelaCriacao() {
     } else if (faltante == true) {
       setFaltante(false); // ← adicionar isso para limpar o estado 
       return;
-    }else if(!sucesso){
+    } else if (!sucesso) {
       navigation.navigate('Home');
     }
   };
@@ -81,6 +82,7 @@ export default function TelaCriacao() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      
       <Text style={styles.tituloSecao}>· INFORMAÇÕES DO PROCESSO</Text>
 
       <TextInput
@@ -112,14 +114,23 @@ export default function TelaCriacao() {
         value={area_process}
         onChangeText={setArea_process}
       />
-      <TextInput
-        placeholder="Status do Processo"
-        style={styles.input}
-        placeholderTextColor="#aaa"
-        value={status_process}
-        onChangeText={setStatus_process}
-      />
-
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={status_process}
+          onValueChange={(itemValue) => setStatus_process(itemValue)}
+          dropdownIconColor="#d4af37"
+          style={styles.picker}
+        >
+          <Picker.Item label="Status do processo" value="" />
+          <Picker.Item label="1. Fase Postulatória (Conhecimento)" value="Fase-Postulatoria" />
+          <Picker.Item label="2. Saneamento e Organização" value="Saneamento e Organização" />
+          <Picker.Item label="3. Instrução (Provas)" value="Instrução" />
+          <Picker.Item label="4. Julgamento (Sentença)" value="Julgamento" />
+          <Picker.Item label="5. Recursos" value="Recursos" />
+          <Picker.Item label="6. Execução" value="Execução" />
+          <Picker.Item label="7. Concluído / Arquivado" value="Concluído" />
+        </Picker>
+      </View>
       <View style={styles.botoesContainer}>
         <TouchableOpacity style={styles.botaoCancelar} onPress={processoCancelado}>
           <Text style={styles.botaoTextoCancelar}>CANCELAR</Text>
@@ -234,4 +245,24 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
   },
+  pickerContainer: {
+    backgroundColor: '#1c1c1c',
+    borderColor: '#d4af37',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  picker: {
+    color: '#fff', // cor do texto interno do picker
+    height: 50,
+    width: '100%',
+  },
+  label: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+
 });

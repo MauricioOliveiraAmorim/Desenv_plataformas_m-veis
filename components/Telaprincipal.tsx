@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from './App';
 import { useNavigation } from '@react-navigation/native';
@@ -16,7 +16,7 @@ interface Processo {
   id: string;
   tipo: string;
   area: string;
-  numero: string; 
+  numero: string;
 }
 
 const MostrarProcessos = async (): Promise<Processo[]> => {
@@ -33,7 +33,7 @@ const MostrarProcessos = async (): Promise<Processo[]> => {
         tipo: data.tipo_Processo,
         area: data.area_Processo,
         numero: data.numero_Processo, // ← novo campo
-      });      
+      });
     });
     return processos;
   } catch (error) {
@@ -46,6 +46,7 @@ export default function TelaPrincipal() {
   const navigation = useNavigation<NavigationProp>();
 
   const [processos, setProcessos] = useState<Processo[]>([]);
+  const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
 
   useEffect(() => {
     const carregarProcessos = async () => {
@@ -58,7 +59,7 @@ export default function TelaPrincipal() {
     <View style={styles.cardProcesso}>
       <View style={styles.headerProcesso}>
         <Text style={styles.titulo}>{item.titulo}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Processo',{
+        <TouchableOpacity onPress={() => navigation.navigate('Processo', {
           titulo: item.titulo,
           status: item.status,
           id: item.id,
@@ -72,10 +73,47 @@ export default function TelaPrincipal() {
       <Text style={styles.status}>{item.status}</Text>
     </View>
   );
-  
+
 
   return (
     <View style={styles.container}>
+      <View style={styles.logoutContainer}>
+        <TouchableOpacity style={styles.botaoLogout} onPress={() => setModalLogoutVisible(true)}>
+          <Icon name="log-out-outline" size={20} color="#d4af37" />
+          <Text style={styles.textoLogout}>Logout</Text>
+        </TouchableOpacity>
+
+        <Modal
+          transparent
+          animationType="fade"
+          visible={modalLogoutVisible}
+          onRequestClose={() => setModalLogoutVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalBox}>
+              <Text style={styles.textoModal}>Deseja sair?</Text>
+              <Text style={[styles.textoModalSecundario]}>Você será redirecionado para o login.</Text>
+
+              <View style={styles.modalBotoes}>
+                <TouchableOpacity style={styles.botaoCancelarModal} onPress={() => setModalLogoutVisible(false)}>
+                  <Text style={styles.textoCancelarModal}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.botaoConfirmarModal}
+                  onPress={() => {
+                    setModalLogoutVisible(false);
+                    navigation.navigate('Login');
+                  }}
+                >
+                  <Text style={styles.textoConfirmarModal}>Sair</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+      </View>
       {/* Barra de busca */}
       <View style={styles.barraBusca}>
         <TextInput
@@ -177,5 +215,84 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  
+  logoutContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
+  botaoLogout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    marginBottom: 15,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    borderRadius: 8,
+  },
+  textoLogout: {
+    color: '#d4af37',
+    marginLeft: 6,
+    fontWeight: 'bold',
+  },
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#1c1c1c',
+    padding: 25,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    alignItems: 'center',
+    width: '80%',
+  },
+  textoModal: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  textoModalSecundario: {
+    color: '#ccc',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalBotoes: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  botaoCancelarModal: {
+    backgroundColor: '#333',
+    padding: 10,
+    borderRadius: 6,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  textoCancelarModal: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  botaoConfirmarModal: {
+    backgroundColor: '#d4af37',
+    padding: 10,
+    borderRadius: 6,
+    flex: 1,
+    marginLeft: 10,
+    alignItems: 'center',
+  },
+  textoConfirmarModal: {
+    color: '#000',
+    fontWeight: 'bold',
+  },
+
+
 });

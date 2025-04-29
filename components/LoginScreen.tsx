@@ -93,7 +93,9 @@ export default function LoginScreen() {
 
   return (
     <Animated.View style={[styles.loginContainer, { opacity: fadeAnim }]}>
+    
       <Text style={styles.loginLabel}>Usuário:</Text>
+      <View style = {{width:323}}>
       <TextInput
         style={styles.loginInput}
         placeholder="Digite seu nome"
@@ -101,6 +103,7 @@ export default function LoginScreen() {
         value={entradaname}
         onChangeText={setEntradaname}
       />
+      </View>
 
       <Text style={styles.loginLabel}>Senha:</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
