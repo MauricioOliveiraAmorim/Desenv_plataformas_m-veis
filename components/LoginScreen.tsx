@@ -16,6 +16,7 @@ import { RootStackParamList } from './App';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { collection, getDocs } from '@react-native-firebase/firestore';
 import { db } from './firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -53,15 +54,20 @@ export default function LoginScreen() {
         const querySnapshot = await getDocs(collection(db, 'cadastros'));
 
         let usuarioValido = false;
+        let usuarioId = ''; // ← Captura o ID do usuário
+
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           if (data.nomeUser === entradaname && data.senhaUser === entradapassword) {
             usuarioValido = true;
+            usuarioId = doc.id; // ← Aqui você captura o doc.id
           }
         });
 
         if (usuarioValido) {
+          // Armazene o usuário logado (doc.id) com AsyncStorage ou Context
+          await AsyncStorage.setItem('usuarioId', usuarioId); // ← salvar localmente
           navigation.navigate('Home');
         } else {
           setMensagemModal('Usuários ou senha incorretos!');
@@ -93,16 +99,24 @@ export default function LoginScreen() {
 
   return (
     <Animated.View style={[styles.loginContainer, { opacity: fadeAnim }]}>
-    
+
       <Text style={styles.loginLabel}>Usuário:</Text>
-      <View style = {{width:323}}>
-      <TextInput
-        style={styles.loginInput}
-        placeholder="Digite seu nome"
-        placeholderTextColor="#999"
-        value={entradaname}
-        onChangeText={setEntradaname}
-      />
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TextInput
+          style={[
+            styles.loginInput,
+            { flex: 1 },]}
+          placeholder="Digite seu nome"
+          placeholderTextColor="#999"
+          value={entradaname}
+          onChangeText={setEntradaname}
+        />
+        <Icon
+          name={'person'}
+          size={24}
+          color="#d4af37"
+          style={{ marginLeft: 8 }}
+        />
       </View>
 
       <Text style={styles.loginLabel}>Senha:</Text>

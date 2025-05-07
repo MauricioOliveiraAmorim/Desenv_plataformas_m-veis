@@ -4,6 +4,7 @@ import { RootStackParamList } from './App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { db } from './firebaseConfig';
+import { Picker } from '@react-native-picker/picker';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Editar'>;
 
@@ -87,13 +88,24 @@ export default function TelaEditarProcesso() {
         />
 
         <Text style={styles.label}>Status do Processo</Text>
-        <TextInput
-          placeholder="Status do Processo"
-          style={styles.input}
-          placeholderTextColor="#aaa"
-          value={status_process}
-          onChangeText={setStatus_process}
-        />
+        <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={status_process}
+          onValueChange={(itemValue) => setStatus_process(itemValue)}
+          dropdownIconColor="#d4af37"
+          style={styles.picker}
+        >
+          <Picker.Item label="Status do processo" value="" />
+          <Picker.Item label="1. Fase Postulatória (Conhecimento)" value="Fase-Postulatoria" />
+          <Picker.Item label="2. Saneamento e Organização" value="Saneamento e Organização" />
+          <Picker.Item label="3. Instrução (Provas)" value="Instrução" />
+          <Picker.Item label="4. Julgamento (Sentença)" value="Julgamento" />
+          <Picker.Item label="5. Recursos" value="Recursos" />
+          <Picker.Item label="6. Execução" value="Execução" />
+          <Picker.Item label="7. Concluido / Arquivado" value="Concluido" />
+        </Picker>
+      </View>
+
       </View>
 
       <View style={styles.botoesContainer}>
@@ -168,5 +180,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#000',
     fontWeight: 'bold',
+  },
+  pickerContainer: {
+    backgroundColor: '#1c1c1c',
+    borderColor: '#d4af37',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  picker: {
+    color: '#fff', // cor do texto interno do picker
+    height: 50,
+    width: '100%',
   },
 });

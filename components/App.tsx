@@ -8,12 +8,16 @@ import TelaCriacao from './TelaCriacao';
 import TelaCadastro from './TelaCadastro';
 import TelaProcesso from './TelaProcesso';
 import TelaEditarProcesso from './TelaEditarProcesso';
+import telaFavoritos from './telaFavoritos';
+import TelaUsuario from './TelaUsuario';
 
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Criação: undefined;
   Cadastro: undefined; 
+  Favoritos:undefined;
+  Usuario:undefined;
   Processo: { //processo espera um parametro com dados!!
     titulo: string; // corresponde a nome_Processo
     status: string; // corresponde a status_Processo
@@ -46,6 +50,8 @@ export default function App() {
         <Stack.Screen name="Cadastro" component={TelaCadastro} />
         <Stack.Screen name="Processo" component={TelaProcesso} />
         <Stack.Screen name="Editar" component={TelaEditarProcesso} />
+        <Stack.Screen name="Favoritos" component={telaFavoritos} />
+        <Stack.Screen name="Usuario" component={TelaUsuario} />
       </Stack.Navigator>
     </NavigationContainer>
   );

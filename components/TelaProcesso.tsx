@@ -45,7 +45,7 @@ export default function TelaProcesso() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.botaoVoltar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoVoltar}>
           <Text style={styles.textoVoltar}>← Voltar</Text>
         </TouchableOpacity>
 

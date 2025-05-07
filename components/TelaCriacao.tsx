@@ -128,7 +128,7 @@ export default function TelaCriacao() {
           <Picker.Item label="4. Julgamento (Sentença)" value="Julgamento" />
           <Picker.Item label="5. Recursos" value="Recursos" />
           <Picker.Item label="6. Execução" value="Execução" />
-          <Picker.Item label="7. Concluído / Arquivado" value="Concluído" />
+          <Picker.Item label="7. Concluido / Arquivado" value="Concluido" />
         </Picker>
       </View>
       <View style={styles.botoesContainer}>

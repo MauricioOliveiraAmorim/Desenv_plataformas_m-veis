@@ -1,11 +1,12 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button, Modal } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button, Modal, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from './App';
 import { useNavigation } from '@react-navigation/native';
 import { db } from './firebaseConfig';
-import { collection, getDocs } from '@react-native-firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -17,11 +18,25 @@ interface Processo {
   tipo: string;
   area: string;
   numero: string;
+  data: string;
+  favoritado?: boolean;// novo campo
+
 }
 
 const MostrarProcessos = async (): Promise<Processo[]> => {
   try {
+    //puxando o favorito
+    const usuarioId = await AsyncStorage.getItem('usuarioId');
+    if (!usuarioId) return [];//se nao houver o doc do usuario, return
+
     const querySnapshot = await getDocs(collection(db, 'processos'));
+
+    //verificando id do usuario
+    const favoritosSnapshot = await getDocs(
+      query(collection(db, 'favoritos'), where('userId', '==', usuarioId))
+    )
+    const favoritosIds = favoritosSnapshot.docs.map((doc) => doc.data().processoId);
+
     const processos: Processo[] = [];
 
     querySnapshot.forEach((doc) => {
@@ -33,8 +48,33 @@ const MostrarProcessos = async (): Promise<Processo[]> => {
         tipo: data.tipo_Processo,
         area: data.area_Processo,
         numero: data.numero_Processo, // ← novo campo
+        data: data.data,
+        favoritado: favoritosIds.includes(doc.id), // marcado se estiver na coleção favoritos
+
       });
     });
+    const prioridadeStatus = [
+      'Fase-Postulatoria',
+      'Saneamento',
+      'Instrução',
+      'Julgamento',
+      'Recursos',
+      'Execução',
+      'Concluido'
+    ];
+
+    processos.sort((a, b) => {
+      const prioridadeA = prioridadeStatus.indexOf(a.status);
+      const prioridadeB = prioridadeStatus.indexOf(b.status);
+
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB; // ordena pela fase
+      } else {
+        return new Date(b.data).getTime() - new Date(a.data).getTime(); // se fase for igual, mais recente primeiro
+      }
+    });
+
+
     return processos;
   } catch (error) {
     console.error('Erro ao buscar processos:', error);
@@ -47,28 +87,104 @@ export default function TelaPrincipal() {
 
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
+  //animação
+  const starScale = useRef(new Animated.Value(1)).current;
+
+  const animarEstrela = () => {
+    Animated.sequence([
+      Animated.timing(starScale, { toValue: 1.3, duration: 100, useNativeDriver: true }),
+      Animated.timing(starScale, { toValue: 1.0, duration: 100, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const carregarProcessos = async () => {
+    const dados = await MostrarProcessos();
+    setProcessos(dados);
+  }
 
   useEffect(() => {
-    const carregarProcessos = async () => {
-      const dados = await MostrarProcessos();
-      setProcessos(dados);
-    }
     carregarProcessos();
   }, []);
+
+
+  const addFavorito = async (processoId: string) => {
+    const usuarioId = await AsyncStorage.getItem('usuarioId');
+    if (!usuarioId) return;//se nao houver o doc do usuario, return
+
+    await addDoc(collection(db, 'favoritos'), {
+      userId: usuarioId,
+      processoId: processoId,
+    });
+
+    //animaçao
+    setProcessos((prev) =>
+      prev.map((proc) =>
+        proc.id === processoId ? { ...proc, favoritado: true } : proc
+      )
+    );
+  };
+
+  const removerFavorito = async (processoId: string) => {
+    const usuarioId = await AsyncStorage.getItem('usuarioId');
+    if (!usuarioId) return;//se nao houver o doc do usuario, return
+
+    const favoritsRef = collection(db, 'favoritos');
+    const q = query(favoritsRef, where('userId', '==', usuarioId), where('processoId', '==', processoId));
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach(async (fav) => {
+      await deleteDoc(doc(db, 'favoritos', fav.id));
+    });
+
+    //animaçao
+    setProcessos((prev) =>
+      prev.map((proc) =>
+        proc.id === processoId ? { ...proc, favoritado: false } : proc
+      )
+    );
+  };
+
+
   const renderItem = ({ item }: { item: Processo }) => (//renderizar cada item da lista.
     <View style={styles.cardProcesso}>
       <View style={styles.headerProcesso}>
         <Text style={styles.titulo}>{item.titulo}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Processo', {
-          titulo: item.titulo,
-          status: item.status,
-          id: item.id,
-          tipo: item.tipo,
-          area: item.area,
-          numero: item.numero
-        })}>
-          <Icon name="ellipsis-horizontal-outline" size={20} color="#d4af37" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          {/* Ação: Menu */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Processo', {
+              titulo: item.titulo,
+              status: item.status,
+              id: item.id,
+              tipo: item.tipo,
+              area: item.area,
+              numero: item.numero
+            })}
+            style={{ padding: 6 }}
+          >
+            <Icon name="ellipsis-horizontal-outline" size={22} color="#d4af37" />
+          </TouchableOpacity>
+
+          {/* Ação: Favorito */}
+          <TouchableOpacity
+            onPress={() => {
+              animarEstrela();
+              item.favoritado ? removerFavorito(item.id) : addFavorito(item.id);
+            }}
+            style={{ padding: 1 }}
+          >
+            <Animated.View style={{ transform: [{ scale: starScale }] }}>
+              <Icon
+                name={item.favoritado ? 'star' : 'star-outline'}
+                size={22}
+                color={item.favoritado ? '#FFD700' : '#555'}
+              />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+
+
+
       </View>
       <Text style={styles.status}>{item.status}</Text>
     </View>
@@ -142,13 +258,13 @@ export default function TelaPrincipal() {
 
       {/* Barra de navegação inferior */}
       <View style={styles.barraNavegacao}>
-        <TouchableOpacity>
-          <Icon name="home" size={28} color="#d4af37" />
+        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+          <Icon name="home" size={28} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Favoritos')}>
           <Icon name="star" size={28} color="#d4af37" />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=> navigation.navigate('Usuario')}>
           <Icon name="person" size={28} color="#d4af37" />
         </TouchableOpacity>
       </View>
@@ -208,7 +324,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#111',
     position: 'absolute',
     bottom: 0,
-    width: '100%',
+    width: '112%',
   },
   headerProcesso: {
     flexDirection: 'row',
