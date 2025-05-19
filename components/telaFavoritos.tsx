@@ -24,7 +24,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Favoritos'>
 export default function TelaFavoritos() {
     const navigation = useNavigation<NavigationProp>();
     const [processos, setProcessos] = useState<Processo[]>([]);
-    const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
+    // const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
 
     
     const starScale = useRef(new Animated.Value(1)).current;

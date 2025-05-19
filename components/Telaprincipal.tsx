@@ -86,7 +86,11 @@ export default function TelaPrincipal() {
   const navigation = useNavigation<NavigationProp>();
 
   const [processos, setProcessos] = useState<Processo[]>([]);
+  const [processosFiltrados, setProcessosFiltrados] = useState<Processo[]>([]);
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
+
+  const [termoBusca, setTermoBusca] = useState('');
+
   //animação
   const starScale = useRef(new Animated.Value(1)).current;
 
@@ -96,6 +100,19 @@ export default function TelaPrincipal() {
       Animated.timing(starScale, { toValue: 1.0, duration: 100, useNativeDriver: true }),
     ]).start();
   };
+
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      const resultado = processos.filter(p =>
+        p.titulo.toLowerCase().includes(termoBusca.toLowerCase()) ||//toLowerCase transforma tudo em minuscula!
+        p.numero.toLowerCase().includes(termoBusca.toLowerCase()) ||
+        p.status.toLowerCase().includes(termoBusca.toLowerCase())
+      );
+      setProcessosFiltrados(resultado);
+    }, 400); // 400ms de espera após digitação
+    return () => clearTimeout(timeOut); // limpa o timeout anterior
+  }), [termoBusca, processos]
+
 
   const carregarProcessos = async () => {
     const dados = await MostrarProcessos();
@@ -236,6 +253,8 @@ export default function TelaPrincipal() {
           placeholder="Pesquisar processo..."
           placeholderTextColor='gray'
           style={styles.inputBusca}
+          value={termoBusca}
+          onChangeText={setTermoBusca}
         />
         <TouchableOpacity>
           <Icon name="filter" size={24} color="#d4af37" />
@@ -247,7 +266,7 @@ export default function TelaPrincipal() {
       // Ela só carrega os itens visíveis, evitando lentidão com listas grandes.
       // 'data' é a lista, 'renderItem' define como mostrar cada item, e 'keyExtractor' dá uma chave única pra cada um. */}
       <FlatList
-        data={processos}
+        data={processosFiltrados}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -264,7 +283,7 @@ export default function TelaPrincipal() {
         <TouchableOpacity onPress={() => navigation.navigate('Favoritos')}>
           <Icon name="star" size={28} color="#d4af37" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> navigation.navigate('Usuario')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Usuario')}>
           <Icon name="person" size={28} color="#d4af37" />
         </TouchableOpacity>
       </View>

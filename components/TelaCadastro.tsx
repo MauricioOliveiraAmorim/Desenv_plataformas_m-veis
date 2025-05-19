@@ -26,39 +26,41 @@ export default function TelaCadastro() {
   const handleCadastro = async () => {
 
     if (senha_user !== confirmarSenha_user) {
-        Alert.alert('Erro', 'As senhas não coincidem!');
-        return;
+      Alert.alert('Erro', 'As senhas não coincidem!');
+      return;
+    }
+
+    if (!nome_user || !email_user || !senha_user || !confirmarSenha_user) {
+      Alert.alert('Erro', 'Preencha todos os campos!');
+      return;
+    }
+    const avatarLink = "https://cdn-icons-png.flaticon.com/512/1077/1077012.png"; // índice do avatar padrão
+    if (nome_user && email_user && senha_user && confirmarSenha_user) {
+      const novoProcesso = {
+
+        nomeUser: nome_user,
+        emailUser: email_user,
+        senhaUser: senha_user,
+        confirmarSenhaUser: confirmarSenha_user,
+        data: new Date().toISOString(),
+        avatar: avatarLink
+      };
+      try {
+        console.log('Firestore DB:', db);
+        await db.collection('cadastros').add(novoProcesso);
+        Alert.alert('Sucesso', 'Cadastro registrado com sucesso!', [
+          { text: 'OK', onPress: () => navigation.navigate('Login') },
+        ]);
+        setNome_user('');
+        setEmail_user('');
+        setSenha_user('');
+        setConfirmarSenha_user('');
+      } catch (error) {
+        alert('Erro!');
       }
-      
-      if (!nome_user || !email_user || !senha_user || !confirmarSenha_user) {
-        Alert.alert('Erro', 'Preencha todos os campos!');
-        return;
-      }
-      
-      if (nome_user && email_user && senha_user && confirmarSenha_user) {
-        const novoProcesso = {
-          nomeUser: nome_user,
-          emailUser: email_user,
-          senhaUser: senha_user,
-          confirmarSenhaUser: confirmarSenha_user,
-          data: new Date().toISOString(),
-        };
-        try {
-          console.log('Firestore DB:', db);
-          await db.collection('cadastros').add(novoProcesso);
-          Alert.alert('Sucesso', 'Cadastro registrado com sucesso!', [
-            { text: 'OK', onPress: () => navigation.navigate('Login') },
-          ]);        
-          setNome_user('');
-          setEmail_user('');
-          setSenha_user('');
-          setConfirmarSenha_user('');
-        } catch (error) {
-          alert('Erro!');
-        }
-      } else {
-        alert('Por favor, preencha todos os campos.');
-      }
+    } else {
+      alert('Por favor, preencha todos os campos.');
+    }
   };
 
   return (
@@ -155,5 +157,5 @@ const styles = StyleSheet.create({
   },
 });
 function alert(arg0: string) {
-    throw new Error('Function not implemented.');
-  }
+  throw new Error('Function not implemented.');
+}

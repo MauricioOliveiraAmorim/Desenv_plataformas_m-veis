@@ -55,6 +55,8 @@ export default function LoginScreen() {
 
         let usuarioValido = false;
         let usuarioId = ''; // ← Captura o ID do usuário
+        let usuarioData: any = null;
+
 
 
         querySnapshot.forEach((doc) => {
@@ -62,12 +64,18 @@ export default function LoginScreen() {
           if (data.nomeUser === entradaname && data.senhaUser === entradapassword) {
             usuarioValido = true;
             usuarioId = doc.id; // ← Aqui você captura o doc.id
+            usuarioData = data; // ← salva os dados aqui
           }
         });
 
         if (usuarioValido) {
           // Armazene o usuário logado (doc.id) com AsyncStorage ou Context
           await AsyncStorage.setItem('usuarioId', usuarioId); // ← salvar localmente
+          await AsyncStorage.setItem('user', JSON.stringify({
+            name: usuarioData.nomeUser,
+            email: usuarioData.emailUser, // use '' se o campo for opcional
+            avatar: usuarioData.avatar
+          }));
           navigation.navigate('Home');
         } else {
           setMensagemModal('Usuários ou senha incorretos!');
