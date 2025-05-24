@@ -55,7 +55,7 @@ const MostrarProcessos = async (): Promise<Processo[]> => {
     });
     const prioridadeStatus = [
       'Fase-Postulatoria',
-      'Saneamento',
+      'Saneamento e Organização',
       'Instrução',
       'Julgamento',
       'Recursos',

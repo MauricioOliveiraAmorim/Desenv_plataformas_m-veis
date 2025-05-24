@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './App'; // ajuste se o caminho do App.tsx for diferente
 import { db } from './firebaseConfig';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Cadastro'>;
 
@@ -22,6 +23,12 @@ export default function TelaCadastro() {
   const [email_user, setEmail_user] = useState('');
   const [senha_user, setSenha_user] = useState('');
   const [confirmarSenha_user, setConfirmarSenha_user] = useState('');
+
+  const validarEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
 
   const handleCadastro = async () => {
 
@@ -34,6 +41,12 @@ export default function TelaCadastro() {
       Alert.alert('Erro', 'Preencha todos os campos!');
       return;
     }
+
+    if (!validarEmail(email_user)) {
+      Alert.alert('Erro', 'Digite um e-mail válido!');
+      return;
+    }
+
     const avatarLink = "https://cdn-icons-png.flaticon.com/512/1077/1077012.png"; // índice do avatar padrão
     if (nome_user && email_user && senha_user && confirmarSenha_user) {
       const novoProcesso = {
@@ -56,15 +69,22 @@ export default function TelaCadastro() {
         setSenha_user('');
         setConfirmarSenha_user('');
       } catch (error) {
-        alert('Erro!');
+        Alert.alert('Erro!');
       }
     } else {
-      alert('Por favor, preencha todos os campos.');
+      Alert.alert('Por favor, preencha todos os campos.');
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Cabeçalho fixo com botão voltar */}
+      <View style={[styles.header, { marginTop: 20, marginBottom: 10 }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoVoltar}>
+          <Icon name="chevron-back-outline" size={22} color="#d4af37" />
+          <Text style={styles.textoVoltar}>Voltar</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.titulo}>Cadastro</Text>
 
       <Text style={styles.label}>Nome</Text>
@@ -155,7 +175,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    backgroundColor: '#000',
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
+    zIndex: 10,
+  },
+
+  botaoVoltar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+
+  textoVoltar: {
+    color: '#d4af37',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginLeft: 6,
+  },
 });
-function alert(arg0: string) {
-  throw new Error('Function not implemented.');
-}
+

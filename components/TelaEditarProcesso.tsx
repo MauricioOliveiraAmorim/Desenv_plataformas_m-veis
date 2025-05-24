@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal } from 'react-native';
 import { RootStackParamList } from './App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { db } from './firebaseConfig';
 import { Picker } from '@react-native-picker/picker';
+import { addDoc, collection } from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Editar'>;
 
@@ -19,14 +21,84 @@ export default function TelaEditarProcesso() {
   const [area_process, setArea_process] = useState(area);
   const [status_process, setStatus_process] = useState(status);
 
-  const navegandoComAlert = () => {
-    navigation.navigate('Home');
-    Alert.alert('Edição do processo cancelada!');
+  const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
+  const [mensagemModal, setMensagemModal] = useState('');
+
+  const fecharModal = () => {
+    setModalVisibleSucess(false);
+    if (sucesso) {
+      navigation.navigate('Home');
+    }
   };
+
+
+  const navegandoComModal = () => {
+    navigation.navigate('Home');
+    setMensagemModal('Edição cancelada. Nenhuma alteração salva.')
+    setSucesso(false)
+    setModalVisibleSucess(true);
+  };
+
+  //pensar
+  const registrarAuditoria = async ({
+    processoId,
+    campo,
+    de,
+    para,
+    usuarioId,
+    nomeUsuario
+  }: {
+    processoId: string;
+    campo: string;
+    de: string;
+    para: string;
+    usuarioId: string;
+    nomeUsuario: string;
+  }) => {
+    try {
+      const ref = collection(db, 'processos', processoId, 'auditorias');
+      await addDoc(ref, {
+        campoAlterado: campo,
+        valorAnterior: de,
+        ValorAtual: para,
+        usuarioId,
+        nomeUsuario,
+        Timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao registrar auditoria:', error);
+    }
+  }
 
   const atualizarProcesso = async () => {
     if (nome_process && numero_process && tipo_process && area_process && status_process) {
       try {
+        const userJson = await AsyncStorage.getItem('user');
+        const userId = await AsyncStorage.getItem('usuarioId');
+
+        // Garante que sempre será string
+        const usuarioId = userId ?? '';
+        const user = userJson ? JSON.parse(userJson) : {};
+        const nomeUsuario = user.name ?? 'Desconhecido';
+
+        // Aqui comparando e registrando alterações
+        if (nome_process !== titulo) {
+          await registrarAuditoria({ processoId: id, campo: 'nome_Processo', de: titulo, para: nome_process, usuarioId, nomeUsuario });
+        }
+        if (numero_process !== numero) {
+          await registrarAuditoria({ processoId: id, campo: 'numero_Processo', de: numero, para: numero_process, usuarioId, nomeUsuario });
+        }
+        if (tipo_process !== tipo) {
+          await registrarAuditoria({ processoId: id, campo: 'tipo_Processo', de: tipo, para: tipo_process, usuarioId, nomeUsuario });
+        }
+        if (area_process !== area) {
+          await registrarAuditoria({ processoId: id, campo: 'area_Processo', de: area, para: area_process, usuarioId, nomeUsuario });
+        }
+        if (status_process !== status) {
+          await registrarAuditoria({ processoId: id, campo: 'status_Processo', de: status, para: status_process, usuarioId, nomeUsuario });
+        }
+
         await db.collection('processos').doc(id).update({
           nome_Processo: nome_process,
           numero_Processo: numero_process,
@@ -34,16 +106,21 @@ export default function TelaEditarProcesso() {
           area_Processo: area_process,
           status_Processo: status_process,
         });
+        setMensagemModal('Auditoria atualizada com sucesso!');
+        setSucesso(true)
+        setModalVisibleSucess(true);
 
-        Alert.alert('Sucesso', 'Processo atualizado com sucesso!', [
-          { text: 'OK', onPress: () => navigation.navigate('Home') },
-        ]);
       } catch (error) {
         console.error('Erro ao atualizar processo:', error);
-        Alert.alert('Erro!', 'Não foi possível atualizar o processo.');
+        setMensagemModal('Erro ao atualizar auditoria!')
+        setSucesso(false)
+        setModalVisibleSucess(true);
+
       }
     } else {
-      Alert.alert('Erro!', 'Por favor, preencha todos os campos.');
+      setMensagemModal('Erro ao atualizar auditoria!')
+      setSucesso(false)
+      setModalVisibleSucess(true);
     }
   };
 
@@ -89,33 +166,54 @@ export default function TelaEditarProcesso() {
 
         <Text style={styles.label}>Status do Processo</Text>
         <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={status_process}
-          onValueChange={(itemValue) => setStatus_process(itemValue)}
-          dropdownIconColor="#d4af37"
-          style={styles.picker}
-        >
-          <Picker.Item label="Status do processo" value="" />
-          <Picker.Item label="1. Fase Postulatória (Conhecimento)" value="Fase-Postulatoria" />
-          <Picker.Item label="2. Saneamento e Organização" value="Saneamento e Organização" />
-          <Picker.Item label="3. Instrução (Provas)" value="Instrução" />
-          <Picker.Item label="4. Julgamento (Sentença)" value="Julgamento" />
-          <Picker.Item label="5. Recursos" value="Recursos" />
-          <Picker.Item label="6. Execução" value="Execução" />
-          <Picker.Item label="7. Concluido / Arquivado" value="Concluido" />
-        </Picker>
-      </View>
+          <Picker
+            selectedValue={status_process}
+            onValueChange={(itemValue) => setStatus_process(itemValue)}
+            dropdownIconColor="#d4af37"
+            style={styles.picker}
+          >
+            <Picker.Item label="Status do processo" value="" />
+            <Picker.Item label="1. Fase Postulatória (Conhecimento)" value="Fase-Postulatoria" />
+            <Picker.Item label="2. Saneamento e Organização" value="Saneamento e Organização" />
+            <Picker.Item label="3. Instrução (Provas)" value="Instrução" />
+            <Picker.Item label="4. Julgamento (Sentença)" value="Julgamento" />
+            <Picker.Item label="5. Recursos" value="Recursos" />
+            <Picker.Item label="6. Execução" value="Execução" />
+            <Picker.Item label="7. Concluido / Arquivado" value="Concluido" />
+          </Picker>
+        </View>
 
       </View>
 
       <View style={styles.botoesContainer}>
-        <TouchableOpacity style={styles.botaoCancelar} onPress={navegandoComAlert}>
+        <TouchableOpacity style={styles.botaoCancelar} onPress={navegandoComModal}>
           <Text style={styles.botaoTextoCancelar}>CANCELAR</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.botaoCriar} onPress={atualizarProcesso}>
           <Text style={styles.botaoTextoCriar}>SALVAR</Text>
         </TouchableOpacity>
       </View>
+
+
+      {/* Modal Personalizado */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisibleSucess}
+        onRequestClose={fecharModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={[styles.textoModal, { color: sucesso ? '#00ff00' : '#ff4444' }]}>
+              {mensagemModal}
+            </Text>
+            <TouchableOpacity onPress={fecharModal} style={styles.fecharBotao}>
+              <Text style={styles.fecharTexto}>FECHAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
@@ -192,5 +290,36 @@ const styles = StyleSheet.create({
     color: '#fff', // cor do texto interno do picker
     height: 50,
     width: '100%',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#1c1c1c',
+    padding: 30,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    alignItems: 'center',
+  },
+  textoModal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  fecharBotao: {
+    backgroundColor: '#d4af37',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  fecharTexto: {
+    fontWeight: 'bold',
+    color: '#000',
+    fontSize: 16,
   },
 });

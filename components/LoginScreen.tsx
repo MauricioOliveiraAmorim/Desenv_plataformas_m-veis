@@ -23,7 +23,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 export default function LoginScreen() {
   const navigation = useNavigation<NavigationProp>();
 
-  const [entradaname, setEntradaname] = useState('');
+  const [entradaemail, setEntradaemail] = useState('');
   const [entradapassword, setEntradapassword] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
@@ -61,7 +61,7 @@ export default function LoginScreen() {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          if (data.nomeUser === entradaname && data.senhaUser === entradapassword) {
+          if (data.emailUser === entradaemail && data.senhaUser === entradapassword) {
             usuarioValido = true;
             usuarioId = doc.id; // ← Aqui você captura o doc.id
             usuarioData = data; // ← salva os dados aqui
@@ -108,16 +108,16 @@ export default function LoginScreen() {
   return (
     <Animated.View style={[styles.loginContainer, { opacity: fadeAnim }]}>
 
-      <Text style={styles.loginLabel}>Usuário:</Text>
+      <Text style={styles.loginLabel}>E-mail:</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextInput
           style={[
             styles.loginInput,
             { flex: 1 },]}
-          placeholder="Digite seu nome"
+          placeholder="Digite seu E-mail"
           placeholderTextColor="#999"
-          value={entradaname}
-          onChangeText={setEntradaname}
+          value={entradaemail}
+          onChangeText={setEntradaemail}
         />
         <Icon
           name={'person'}
