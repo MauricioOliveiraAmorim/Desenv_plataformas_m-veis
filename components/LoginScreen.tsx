@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import auth from '@react-native-firebase/auth';
 import {
   View,
   Text,
@@ -150,6 +151,15 @@ export default function LoginScreen() {
           />
         </TouchableOpacity>
       </View>
+
+    <TouchableOpacity
+        style={[styles.loginButton, { backgroundColor: '#555', marginTop: 8 }]}
+        onPress={() => navigation.navigate('ForgotPasswordEmail')}
+      >
+      <Text style={[styles.loginButtonText, { color: '#fff' }]}>
+        Esqueci a senha
+      </Text>
+    </TouchableOpacity>
 
       <Modal
         transparent

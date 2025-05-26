@@ -10,6 +10,7 @@ import TelaProcesso from './TelaProcesso';
 import TelaEditarProcesso from './TelaEditarProcesso';
 import telaFavoritos from './telaFavoritos';
 import TelaUsuario from './TelaUsuario';
+import ForgotPasswordEmailScreen from './ForgotPasswordEmailScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   Cadastro: undefined; 
   Favoritos:undefined;
   Usuario:undefined;
+  ForgotPasswordEmail: undefined;
   Processo: { //processo espera um parametro com dados!!
     titulo: string; // corresponde a nome_Processo
     status: string; // corresponde a status_Processo
@@ -52,6 +54,7 @@ export default function App() {
         <Stack.Screen name="Editar" component={TelaEditarProcesso} />
         <Stack.Screen name="Favoritos" component={telaFavoritos} />
         <Stack.Screen name="Usuario" component={TelaUsuario} />
+        <Stack.Screen name="ForgotPasswordEmail" component={ForgotPasswordEmailScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
