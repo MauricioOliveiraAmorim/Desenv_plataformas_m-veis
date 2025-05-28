@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -29,6 +30,12 @@ export default function TelaCadastro() {
     return regex.test(email);
   };
 
+  const validarSenha = (senha: string) => {
+    const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    return regex.test(senha);
+  };
+
+
 
   const handleCadastro = async () => {
 
@@ -42,17 +49,23 @@ export default function TelaCadastro() {
       return;
     }
 
-    if (!validarEmail(email_user)) {
+    if (!validarEmail(email_user.trim())) {
       Alert.alert('Erro', 'Digite um e-mail válido!');
       return;
     }
 
+    if (!validarSenha(senha_user)) {
+      Alert.alert('Erro', 'A senha deve conter no mínimo 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.');
+      return;
+    }
+
+
     const avatarLink = "https://cdn-icons-png.flaticon.com/512/1077/1077012.png"; // índice do avatar padrão
     if (nome_user && email_user && senha_user && confirmarSenha_user) {
-      const novoProcesso = {
+      const novoCadastro = {
 
         nomeUser: nome_user,
-        emailUser: email_user,
+        emailUser: email_user.trim(),
         senhaUser: senha_user,
         confirmarSenhaUser: confirmarSenha_user,
         data: new Date().toISOString(),
@@ -60,7 +73,7 @@ export default function TelaCadastro() {
       };
       try {
         console.log('Firestore DB:', db);
-        await db.collection('cadastros').add(novoProcesso);
+        await db.collection('cadastros').add(novoCadastro);
         Alert.alert('Sucesso', 'Cadastro registrado com sucesso!', [
           { text: 'OK', onPress: () => navigation.navigate('Login') },
         ]);
@@ -79,12 +92,19 @@ export default function TelaCadastro() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Cabeçalho fixo com botão voltar */}
+
       <View style={[styles.header, { marginTop: 20, marginBottom: 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoVoltar}>
           <Icon name="chevron-back-outline" size={22} color="#d4af37" />
           <Text style={styles.textoVoltar}>Voltar</Text>
         </TouchableOpacity>
       </View>
+      {/* <View style={{ alignItems: 'center', marginBottom: 30 }}>
+        <Image
+          source={require('./Logo/logo.png')} // ajuste conforme seu caminho
+          style={{ width: 120, height: 120, resizeMode: 'contain' }}
+        />
+      </View> */}
       <Text style={styles.titulo}>Cadastro</Text>
 
       <Text style={styles.label}>Nome</Text>
@@ -125,6 +145,25 @@ export default function TelaCadastro() {
         value={confirmarSenha_user}
         onChangeText={setConfirmarSenha_user}
       />
+
+       {/* Critérios visuais da senha */}
+      <View style={{ alignSelf: 'flex-start', marginTop: 1, marginBottom: 12 }}>
+        <Text style={{ color: senha_user.length >= 8 ? 'green' : 'red' }}>
+          {senha_user.length >= 8 ? '✓' : '✗'} Mínimo de 8 caracteres
+        </Text>
+        <Text style={{ color: /[A-Z]/.test(senha_user) ? 'green' : 'red' }}>
+          {/[A-Z]/.test(senha_user) ? '✓' : '✗'} Pelo menos uma letra maiúscula
+        </Text>
+        <Text style={{ color: /[a-z]/.test(senha_user) ? 'green' : 'red' }}>
+          {/[a-z]/.test(senha_user) ? '✓' : '✗'} Pelo menos uma letra minúscula
+        </Text>
+        <Text style={{ color: /\d/.test(senha_user) ? 'green' : 'red' }}>
+          {/\d/.test(senha_user) ? '✓' : '✗'} Pelo menos um número
+        </Text>
+        <Text style={{ color: /[@$!%*#?&]/.test(senha_user) ? 'green' : 'red' }}>
+          {/[@$!%*#?&]/.test(senha_user) ? '✓' : '✗'} Caractere especial (@, #, !, etc.)
+        </Text>
+      </View>
 
       <TouchableOpacity style={styles.botao} onPress={handleCadastro}>
         <Text style={styles.botaoTexto}>Cadastrar</Text>

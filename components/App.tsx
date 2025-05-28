@@ -10,16 +10,16 @@ import TelaProcesso from './TelaProcesso';
 import TelaEditarProcesso from './TelaEditarProcesso';
 import telaFavoritos from './telaFavoritos';
 import TelaUsuario from './TelaUsuario';
-import ForgotPasswordEmailScreen from './ForgotPasswordEmailScreen';
+import TelaRedefinirSenha from './TelaRedefinirSenha';
 
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Criação: undefined;
-  Cadastro: undefined; 
-  Favoritos:undefined;
-  Usuario:undefined;
-  ForgotPasswordEmail: undefined;
+  Cadastro: undefined;
+  Favoritos: undefined;
+  Usuario: undefined;
+  RedefinirSenha: undefined;
   Processo: { //processo espera um parametro com dados!!
     titulo: string; // corresponde a nome_Processo
     status: string; // corresponde a status_Processo
@@ -27,7 +27,7 @@ export type RootStackParamList = {
     tipo: string;   // corresponde a tipo_Processo
     area: string;   // corresponde a area_Processo
     numero: string; // ← novo campo obrigatório
-  };  
+  };
   Editar: {
     id: string;
     titulo: string;
@@ -36,7 +36,7 @@ export type RootStackParamList = {
     area: string;
     numero: string;
   };
-  
+
 
 };
 
@@ -54,7 +54,7 @@ export default function App() {
         <Stack.Screen name="Editar" component={TelaEditarProcesso} />
         <Stack.Screen name="Favoritos" component={telaFavoritos} />
         <Stack.Screen name="Usuario" component={TelaUsuario} />
-        <Stack.Screen name="ForgotPasswordEmail" component={ForgotPasswordEmailScreen}/>
+        <Stack.Screen name="RedefinirSenha" component={TelaRedefinirSenha} />
       </Stack.Navigator>
     </NavigationContainer>
   );

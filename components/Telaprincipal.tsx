@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button, Modal, Animated } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Alert, Button, Modal, Animated, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from './App';
 import { useNavigation } from '@react-navigation/native';
@@ -211,6 +211,10 @@ export default function TelaPrincipal() {
   return (
     <View style={styles.container}>
       <View style={styles.logoutContainer}>
+        <Image
+          source={require('./Logo/logo.png')} // ajuste o caminho se necessário
+          style={{ width: 40, height: 40, resizeMode: 'contain', marginRight: 'auto' }}
+        />
         <TouchableOpacity style={styles.botaoLogout} onPress={() => setModalLogoutVisible(true)}>
           <Icon name="log-out-outline" size={20} color="#d4af37" />
           <Text style={styles.textoLogout}>Logout</Text>

@@ -25,6 +25,12 @@ export default function TelaEditarProcesso() {
   const [sucesso, setSucesso] = useState(false);
   const [mensagemModal, setMensagemModal] = useState('');
 
+  const mostrarFeedback = (mensagem: string, sucessoFlag: boolean) => {
+    setMensagemModal(mensagem);
+    setSucesso(sucessoFlag);
+    setModalVisibleSucess(true);
+  };
+
   const fecharModal = () => {
     setModalVisibleSucess(false);
     if (sucesso) {
@@ -33,12 +39,18 @@ export default function TelaEditarProcesso() {
   };
 
 
-  const navegandoComModal = () => {
-    navigation.navigate('Home');
-    setMensagemModal('Edição cancelada. Nenhuma alteração salva.')
-    setSucesso(false)
+  const cancelarEdicao = () => {
+    setMensagemModal('Edição cancelada. Nenhuma alteração salva.');
+    setSucesso(false);
     setModalVisibleSucess(true);
+
+    // Espera 2 segundos e depois navega para Home
+    setTimeout(() => {
+      setModalVisibleSucess(false);
+      navigation.navigate('Home');
+    }, 2000); // você pode ajustar esse tempo
   };
+
 
   //pensar
   const registrarAuditoria = async ({
@@ -72,57 +84,40 @@ export default function TelaEditarProcesso() {
   }
 
   const atualizarProcesso = async () => {
-    if (nome_process && numero_process && tipo_process && area_process && status_process) {
-      try {
-        const userJson = await AsyncStorage.getItem('user');
-        const userId = await AsyncStorage.getItem('usuarioId');
+    if (!nome_process || !numero_process || !tipo_process || !area_process || !status_process) {
+      mostrarFeedback('Preencha todos os campos obrigatórios.', false);
+      return;
+    }
 
-        // Garante que sempre será string
-        const usuarioId = userId ?? '';
-        const user = userJson ? JSON.parse(userJson) : {};
-        const nomeUsuario = user.name ?? 'Desconhecido';
+    try {
+      const userJson = await AsyncStorage.getItem('user');
+      const userId = await AsyncStorage.getItem('usuarioId');
+      const usuarioId = userId ?? '';
+      const user = userJson ? JSON.parse(userJson) : {};
+      const nomeUsuario = user.name ?? 'Desconhecido';
 
-        // Aqui comparando e registrando alterações
-        if (nome_process !== titulo) {
-          await registrarAuditoria({ processoId: id, campo: 'nome_Processo', de: titulo, para: nome_process, usuarioId, nomeUsuario });
-        }
-        if (numero_process !== numero) {
-          await registrarAuditoria({ processoId: id, campo: 'numero_Processo', de: numero, para: numero_process, usuarioId, nomeUsuario });
-        }
-        if (tipo_process !== tipo) {
-          await registrarAuditoria({ processoId: id, campo: 'tipo_Processo', de: tipo, para: tipo_process, usuarioId, nomeUsuario });
-        }
-        if (area_process !== area) {
-          await registrarAuditoria({ processoId: id, campo: 'area_Processo', de: area, para: area_process, usuarioId, nomeUsuario });
-        }
-        if (status_process !== status) {
-          await registrarAuditoria({ processoId: id, campo: 'status_Processo', de: status, para: status_process, usuarioId, nomeUsuario });
-        }
+      // Verifica alterações e registra auditoria
+      if (nome_process !== titulo) await registrarAuditoria({ processoId: id, campo: 'nome_Processo', de: titulo, para: nome_process, usuarioId, nomeUsuario });
+      if (numero_process !== numero) await registrarAuditoria({ processoId: id, campo: 'numero_Processo', de: numero, para: numero_process, usuarioId, nomeUsuario });
+      if (tipo_process !== tipo) await registrarAuditoria({ processoId: id, campo: 'tipo_Processo', de: tipo, para: tipo_process, usuarioId, nomeUsuario });
+      if (area_process !== area) await registrarAuditoria({ processoId: id, campo: 'area_Processo', de: area, para: area_process, usuarioId, nomeUsuario });
+      if (status_process !== status) await registrarAuditoria({ processoId: id, campo: 'status_Processo', de: status, para: status_process, usuarioId, nomeUsuario });
 
-        await db.collection('processos').doc(id).update({
-          nome_Processo: nome_process,
-          numero_Processo: numero_process,
-          tipo_Processo: tipo_process,
-          area_Processo: area_process,
-          status_Processo: status_process,
-        });
-        setMensagemModal('Auditoria atualizada com sucesso!');
-        setSucesso(true)
-        setModalVisibleSucess(true);
+      await db.collection('processos').doc(id).update({
+        nome_Processo: nome_process,
+        numero_Processo: numero_process,
+        tipo_Processo: tipo_process,
+        area_Processo: area_process,
+        status_Processo: status_process,
+      });
 
-      } catch (error) {
-        console.error('Erro ao atualizar processo:', error);
-        setMensagemModal('Erro ao atualizar auditoria!')
-        setSucesso(false)
-        setModalVisibleSucess(true);
-
-      }
-    } else {
-      setMensagemModal('Erro ao atualizar auditoria!')
-      setSucesso(false)
-      setModalVisibleSucess(true);
+      mostrarFeedback('Processo atualizado com sucesso!', true);
+    } catch (error) {
+      console.error('Erro ao atualizar processo:', error);
+      mostrarFeedback('Erro ao atualizar o processo.', false);
     }
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
@@ -186,7 +181,7 @@ export default function TelaEditarProcesso() {
       </View>
 
       <View style={styles.botoesContainer}>
-        <TouchableOpacity style={styles.botaoCancelar} onPress={navegandoComModal}>
+        <TouchableOpacity style={styles.botaoCancelar} onPress={cancelarEdicao}>
           <Text style={styles.botaoTextoCancelar}>CANCELAR</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.botaoCriar} onPress={atualizarProcesso}>

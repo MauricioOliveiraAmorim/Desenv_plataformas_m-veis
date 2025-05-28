@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import auth from '@react-native-firebase/auth';
 import {
   View,
   Text,
@@ -9,6 +8,7 @@ import {
   Animated,
   ActivityIndicator,
   Modal,
+  Image,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -109,6 +109,13 @@ export default function LoginScreen() {
   return (
     <Animated.View style={[styles.loginContainer, { opacity: fadeAnim }]}>
 
+      <View style={{ alignItems: 'center', marginBottom: 40 }}>
+        <Image
+          source={require('./Logo/logo.png')} // ajuste o caminho conforme necessário
+          style={{ width: 160, height: 160, resizeMode: 'contain' }}
+        />
+      </View>
+
       <Text style={styles.loginLabel}>E-mail:</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextInput
@@ -152,14 +159,13 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
 
-    <TouchableOpacity
-        style={[styles.loginButton, { backgroundColor: '#555', marginTop: 8 }]}
-        onPress={() => navigation.navigate('ForgotPasswordEmail')}
-      >
-      <Text style={[styles.loginButtonText, { color: '#fff' }]}>
-        Esqueci a senha
-      </Text>
-    </TouchableOpacity>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: -10,marginBottom:20 }}>
+        <TouchableOpacity onPress={() => navigation.navigate('RedefinirSenha')}>
+          <Text style={{ color: '#d4af37', fontSize: 14, textDecorationLine: 'underline' }}>
+            Esqueci minha senha
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <Modal
         transparent
@@ -197,6 +203,8 @@ export default function LoginScreen() {
           Não tem uma conta? Cadastre-se
         </Text>
       </TouchableOpacity>
+
+
     </Animated.View>
   );
 }

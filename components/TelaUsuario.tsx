@@ -19,6 +19,7 @@ import { RootStackParamList } from './App';
 import { collection, doc, updateDoc } from '@react-native-firebase/firestore';
 import { db } from './firebaseConfig';
 import { Alert } from 'react-native';
+import { getAuth, updateEmail } from 'firebase/auth';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Usuario'>;
 
@@ -40,22 +41,22 @@ export default function TelaUsuario() {
   //resolver!
   const avatarOptions = [
     // URLs externas (mantidas normalmente)
-  'https://cdn-icons-png.flaticon.com/512/1077/1077012.png',
-  'https://cdn-icons-png.flaticon.com/512/206/206897.png',
-  'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-  'https://cdn-icons-png.flaticon.com/512/219/219983.png',
-  'https://cdn-icons-png.flaticon.com/512/6454/6454383.png', // Ícone de advogada
-   // Mulher advogada com terno
-  'https://cdn-icons-png.flaticon.com/512/4140/4140048.png',
+    'https://cdn-icons-png.flaticon.com/512/1077/1077012.png',
+    'https://cdn-icons-png.flaticon.com/512/206/206897.png',
+    'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+    'https://cdn-icons-png.flaticon.com/512/219/219983.png',
+    'https://cdn-icons-png.flaticon.com/512/6454/6454383.png', // Ícone de advogada
+    // Mulher advogada com terno
+    'https://cdn-icons-png.flaticon.com/512/4140/4140048.png',
 
-  // Homem advogado com gravata
-  'https://cdn-icons-png.flaticon.com/512/4140/4140051.png',
- 
-  // Advogado com expressão séria
-  'https://cdn-icons-png.flaticon.com/512/2922/2922566.png',
+    // Homem advogado com gravata
+    'https://cdn-icons-png.flaticon.com/512/4140/4140051.png',
 
-  // Mulher com notebook e toga (advogada moderna)
-  'https://cdn-icons-png.flaticon.com/512/942/942748.png'
+    // Advogado com expressão séria
+    'https://cdn-icons-png.flaticon.com/512/2922/2922566.png',
+
+    // Mulher com notebook e toga (advogada moderna)
+    'https://cdn-icons-png.flaticon.com/512/942/942748.png'
     // // ✅ Corrigido: sem o "assets/" no início
     // require('../assets/avatars/advogado1.png'),
     // require('../assets/avatars/advogado2.png'),
@@ -69,6 +70,10 @@ export default function TelaUsuario() {
 
 
 
+  const validarEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
 
   const handleSalvarNome = async () => {
     try {
@@ -108,12 +113,34 @@ export default function TelaUsuario() {
       const usuarioid = await AsyncStorage.getItem("usuarioId");
       if (!usuarioid) return;
 
+      if (!validarEmail(novoEmail.trim())) {
+        Alert.alert('Erro', 'Digite um e-mail válido!');
+        return;
+      }
+
+
       const usuarioReferencia = doc(db, 'cadastros', usuarioid);
 
       await updateDoc(usuarioReferencia, {
-        emailUser: novoEmail,
+        emailUser: novoEmail.trim(),
 
       });
+
+      //   // Atualiza no Firebase Auth
+      // const auth = getAuth();
+      // const user = auth.currentUser;
+
+      // if (user) {
+      //   try {
+      //     await updateEmail(user, novoEmail);
+      //   } catch (authError: any) {
+      //     if (authError.code === 'auth/requires-recent-login') {
+      //       Alert.alert('Erro de segurança', 'Por segurança, faça login novamente antes de alterar o e-mail.');
+      //     } else {
+      //       throw authError;
+      //     }
+      //   }
+      // }
 
       setEmail(novoEmail);
 
