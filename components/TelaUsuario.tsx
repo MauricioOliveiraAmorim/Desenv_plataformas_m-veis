@@ -19,7 +19,6 @@ import { RootStackParamList } from './App';
 import { collection, doc, updateDoc } from '@react-native-firebase/firestore';
 import { db } from './firebaseConfig';
 import { Alert } from 'react-native';
-import { getAuth, updateEmail } from 'firebase/auth';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Usuario'>;
 
@@ -36,6 +35,23 @@ export default function TelaUsuario() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [modalAvatarVisible, setModalAvatarVisible] = useState(false); // modal de avatar
   // const [avatarIndex, setAvatarIndex] = useState<number | null>(null);
+
+  const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
+  const [mensagemModal, setMensagemModal] = useState('');
+
+  const mostrarFeedback = (mensagem: string, sucessoFlag: boolean) => {
+    setMensagemModal(mensagem);
+    setSucesso(sucessoFlag);
+    setModalVisibleSucess(true);
+  };
+
+  const fecharModal = () => {
+    setModalVisibleSucess(false);
+    // if (sucesso) {
+    //   navigation.navigate('Home');
+    // }
+  };
 
 
   //resolver!
@@ -76,9 +92,16 @@ export default function TelaUsuario() {
   };
 
   const handleSalvarNome = async () => {
+
     try {
       const usuarioid = await AsyncStorage.getItem("usuarioId");
       if (!usuarioid) return;
+
+      if (!novoNome.trim()) {
+        // Alert.alert('Erro', 'Este campo nao pode estar vazio!');
+        mostrarFeedback("Este campo não pode estar vazio!", false)
+        return;
+      }
 
       const usuarioReferencia = doc(db, 'cadastros', usuarioid);
 
@@ -113,11 +136,11 @@ export default function TelaUsuario() {
       const usuarioid = await AsyncStorage.getItem("usuarioId");
       if (!usuarioid) return;
 
-      if (!validarEmail(novoEmail.trim())) {
-        Alert.alert('Erro', 'Digite um e-mail válido!');
+      if (!novoEmail.trim() || !validarEmail(novoEmail.trim())) {
+        // Alert.alert('Erro', 'Digite um e-mail válido!');
+        mostrarFeedback("Digite um e-mail válido!", false)
         return;
       }
-
 
       const usuarioReferencia = doc(db, 'cadastros', usuarioid);
 
@@ -125,22 +148,6 @@ export default function TelaUsuario() {
         emailUser: novoEmail.trim(),
 
       });
-
-      //   // Atualiza no Firebase Auth
-      // const auth = getAuth();
-      // const user = auth.currentUser;
-
-      // if (user) {
-      //   try {
-      //     await updateEmail(user, novoEmail);
-      //   } catch (authError: any) {
-      //     if (authError.code === 'auth/requires-recent-login') {
-      //       Alert.alert('Erro de segurança', 'Por segurança, faça login novamente antes de alterar o e-mail.');
-      //     } else {
-      //       throw authError;
-      //     }
-      //   }
-      // }
 
       setEmail(novoEmail);
 
@@ -304,9 +311,30 @@ export default function TelaUsuario() {
         </View>
       </Modal>
 
+      {/* Modal Personalizado */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisibleSucess}
+        onRequestClose={fecharModal}
+      >
+        <View style={styles.modalContainerPersonalizado}>
+          <View style={styles.modalBoxPersonalizado}>
+            <Text style={[styles.textoModalPersonalizado, { color: sucesso ? '#00ff00' : '#ff4444' }]}>
+              {mensagemModal}
+            </Text>
+            <TouchableOpacity onPress={fecharModal} style={styles.fecharBotaoPersonalizado}>
+              <Text style={styles.fecharTextoPersonalizado}>FECHAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
 
       <ScrollView contentContainerStyle={styles.inner}>
-        <Animated.Text style={[styles.title, { transform: [{ translateY: titleAnim }] }]}>Perfil do Usuário</Animated.Text>
+        <Text style={styles.title}>
+          Perfil do Usuário
+        </Text>
 
 
         <TouchableOpacity onPress={() => setModalAvatarVisible(true)}> {/* clique para alterar avatar */}
@@ -400,7 +428,7 @@ export default function TelaUsuario() {
         <TouchableOpacity onPress={() => navigation.navigate('Favoritos')}>
           <Icon name="star" size={28} color="#d4af37" />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => { }}>
           <Icon name="person" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -555,6 +583,37 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#d4af37',
   },
-
+  modalContainerPersonalizado: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBoxPersonalizado: {
+    backgroundColor: '#1c1c1c',
+    padding: 30,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    alignItems: 'center',
+    width: 325
+  },
+  textoModalPersonalizado: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  fecharBotaoPersonalizado: {
+    backgroundColor: '#d4af37',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  fecharTextoPersonalizado: {
+    fontWeight: 'bold',
+    color: '#000',
+    fontSize: 16,
+  },
 
 });

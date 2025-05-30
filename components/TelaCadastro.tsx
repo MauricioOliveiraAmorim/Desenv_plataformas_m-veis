@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Image,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,6 +26,26 @@ export default function TelaCadastro() {
   const [senha_user, setSenha_user] = useState('');
   const [confirmarSenha_user, setConfirmarSenha_user] = useState('');
 
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
+  const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
+  const [mensagemModal, setMensagemModal] = useState('');
+
+  const mostrarFeedback = (mensagem: string, sucessoFlag: boolean) => {
+    setMensagemModal(mensagem);
+    setSucesso(sucessoFlag);
+    setModalVisibleSucess(true);
+  };
+
+  const fecharModal = () => {
+    setModalVisibleSucess(false);
+    // if (sucesso) {
+    //   navigation.navigate('Home');
+    // }
+  };
+
+
   const validarEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
@@ -40,22 +61,32 @@ export default function TelaCadastro() {
   const handleCadastro = async () => {
 
     if (senha_user !== confirmarSenha_user) {
-      Alert.alert('Erro', 'As senhas não coincidem!');
+      mostrarFeedback('As senhas não coincidem!', false);
       return;
     }
 
     if (!nome_user || !email_user || !senha_user || !confirmarSenha_user) {
-      Alert.alert('Erro', 'Preencha todos os campos!');
+      mostrarFeedback('Preencha todos os campos!', false);
       return;
     }
 
     if (!validarEmail(email_user.trim())) {
-      Alert.alert('Erro', 'Digite um e-mail válido!');
+      mostrarFeedback('Digite um e-mail válido!', false);
       return;
     }
 
     if (!validarSenha(senha_user)) {
-      Alert.alert('Erro', 'A senha deve conter no mínimo 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.');
+      mostrarFeedback('A senha deve conter no mínimo 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.', false);
+      return;
+    }
+
+    const querySnapshot = await db
+      .collection('cadastros')
+      .where('emailUser', '==', email_user.trim().toLowerCase())
+      .get();
+
+    if (!querySnapshot.empty) {
+      mostrarFeedback('Já existe um cadastro com esse e-mail!', false);
       return;
     }
 
@@ -65,18 +96,23 @@ export default function TelaCadastro() {
       const novoCadastro = {
 
         nomeUser: nome_user,
-        emailUser: email_user.trim(),
+        emailUser: email_user.trim().toLowerCase(),
         senhaUser: senha_user,
         confirmarSenhaUser: confirmarSenha_user,
         data: new Date().toISOString(),
         avatar: avatarLink
       };
       try {
+
         console.log('Firestore DB:', db);
         await db.collection('cadastros').add(novoCadastro);
-        Alert.alert('Sucesso', 'Cadastro registrado com sucesso!', [
-          { text: 'OK', onPress: () => navigation.navigate('Login') },
-        ]);
+        // Alert.alert('Sucesso', 'Cadastro registrado com sucesso!', [
+        //   { text: 'OK', onPress: () => navigation.navigate('Login') },
+        // ]);
+        mostrarFeedback("Cadastro registrado com sucesso!", true)
+        setTimeout(() => {
+          navigation.navigate('Login')
+        }, 2000);
         setNome_user('');
         setEmail_user('');
         setSenha_user('');
@@ -127,14 +163,43 @@ export default function TelaCadastro() {
       />
 
       <Text style={styles.label}>Senha</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite sua senha"
-        placeholderTextColor="#aaa"
-        secureTextEntry
-        value={senha_user}
-        onChangeText={setSenha_user}
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.inputComIcone}
+          placeholder="Digite sua senha"
+          placeholderTextColor="#aaa"
+          secureTextEntry={!mostrarSenha}
+          value={senha_user}
+          onChangeText={setSenha_user}
+        />
+        <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)}>
+          <Icon
+            name={mostrarSenha ? 'eye-off-outline' : 'eye-outline'}
+            size={22}
+            color="#d4af37"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Modal Personalizado */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisibleSucess}
+        onRequestClose={fecharModal}
+      >
+        <View style={styles.modalContainerPersonalizado}>
+          <View style={styles.modalBoxPersonalizado}>
+            <Text style={[styles.textoModalPersonalizado, { color: sucesso ? '#00ff00' : '#ff4444' }]}>
+              {mensagemModal}
+            </Text>
+            <TouchableOpacity onPress={fecharModal} style={styles.fecharBotaoPersonalizado}>
+              <Text style={styles.fecharTextoPersonalizado}>FECHAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
 
       <Text style={styles.label}>Confirmar Senha</Text>
       <TextInput
@@ -146,7 +211,7 @@ export default function TelaCadastro() {
         onChangeText={setConfirmarSenha_user}
       />
 
-       {/* Critérios visuais da senha */}
+      {/* Critérios visuais da senha */}
       <View style={{ alignSelf: 'flex-start', marginTop: 1, marginBottom: 12 }}>
         <Text style={{ color: senha_user.length >= 8 ? 'green' : 'red' }}>
           {senha_user.length >= 8 ? '✓' : '✗'} Mínimo de 8 caracteres
@@ -184,7 +249,7 @@ const styles = StyleSheet.create({
     color: '#d4af37',
     textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginBottom: 15,
   },
   label: {
     color: '#d4af37',
@@ -248,5 +313,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 6,
   },
+  inputWrapper: {
+    flexDirection: 'row',       // 💡 Coloca input e ícone lado a lado
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    borderColor: '#d4af37',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+
+  inputComIcone: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 16,
+    paddingVertical: 10,
+  },
+  modalContainerPersonalizado: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBoxPersonalizado: {
+    backgroundColor: '#1c1c1c',
+    padding: 30,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d4af37',
+    alignItems: 'center',
+    width: 325
+  },
+  textoModalPersonalizado: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  fecharBotaoPersonalizado: {
+    backgroundColor: '#d4af37',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  fecharTextoPersonalizado: {
+    fontWeight: 'bold',
+    color: '#000',
+    fontSize: 16,
+  },
+
 });
 

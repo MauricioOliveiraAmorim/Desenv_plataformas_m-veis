@@ -21,6 +21,39 @@ export default function TelaRedefinirSenha() {
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const [mostrarSenhaConfirmacao, setMostrarSenhaConfirmacao] = useState(false);
 
+    const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
+    const [sucesso, setSucesso] = useState(false);
+    const [mensagemModal, setMensagemModal] = useState('');
+
+    const mostrarFeedback = (mensagem: string, sucessoFlag: boolean) => {
+        setMensagemModal(mensagem);
+        setSucesso(sucessoFlag);
+        setModalVisibleSucess(true);
+    };
+
+    const [modalVisibleSucess2, setModalVisibleSucess2] = useState(false);
+    const [conteudoModal, setConteudoModal] = useState<React.ReactNode>(null);
+    const mostrarFeedback2 = (conteudo: React.ReactNode, sucessoFlag: boolean) => {
+        setConteudoModal(conteudo);
+        setSucesso(sucessoFlag);
+        setModalVisibleSucess2(true);
+    }
+
+    const fecharModal2 = () => {
+        setModalVisibleSucess2(false);
+        // if (sucesso) {
+        //   navigation.navigate('Home');
+        // }
+    };
+
+
+    const fecharModal = () => {
+        setModalVisibleSucess(false);
+        // if (sucesso) {
+        //   navigation.navigate('Home');
+        // }
+    };
+
 
     const validarSenha = (senha: string) => {
         const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
@@ -29,7 +62,8 @@ export default function TelaRedefinirSenha() {
 
     const HandlebucarEmail = async () => {
         if (!email.trim()) {
-            Alert.alert('Erro', 'Por favor, informe um e-mail.');
+            // Alert.alert('Erro', 'Por favor, informe um e-mail.');
+            mostrarFeedback("Por favor, informe um e-mail.", false);
             return;
         }
         try {
@@ -41,7 +75,8 @@ export default function TelaRedefinirSenha() {
                 setDocIdEncontrado(docEncontrado.id); // ← salva o ID do documento
                 setModalSenhaVisible(true); // ← abre o modal para redefinir senha
             } else {
-                Alert.alert('Erro', 'Usuário não encontrado.');
+                // Alert.alert('Erro', 'Usuário não encontrado.');
+                mostrarFeedback('Usuário não encontrado', false)
             }
         } catch (error) {
             console.error('Erro ao buscar e-mail:', error);
@@ -51,17 +86,39 @@ export default function TelaRedefinirSenha() {
 
     const handleSalvarSenha = async () => {
         if (!novaSenha || !confirmarSenha) {
-            Alert.alert('Erro', 'Preencha ambos os campos de senha.');
+            // Alert.alert('Erro', 'Preencha ambos os campos de senha.');
+            mostrarFeedback("Preencha ambos os campos de senha.", false)
             return;
         }
 
         if (novaSenha !== confirmarSenha) {
-            Alert.alert('Erro', 'As senhas não coincidem.');
+            // Alert.alert('Erro', 'As senhas não coincidem.');
+            mostrarFeedback("As senhas não coincidem.", false)
             return;
         }
 
         if (!validarSenha(novaSenha)) {
-            Alert.alert('Erro', 'A senha deve conter no mínimo 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.');
+            // Alert.alert('Erro', 'A senha deve conter no mínimo 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.');
+            mostrarFeedback2(
+                <View style={{ alignSelf: 'flex-start', marginTop: 1, marginBottom: 12 }}>
+                    <Text style={{ color: novaSenha.length >= 8 ? 'green' : 'red' }}>
+                        {novaSenha.length >= 8 ? '✓' : '✗'} Mínimo de 8 caracteres
+                    </Text>
+                    <Text style={{ color: /[A-Z]/.test(novaSenha) ? 'green' : 'red' }}>
+                        {/[A-Z]/.test(novaSenha) ? '✓' : '✗'} Pelo menos uma letra maiúscula
+                    </Text>
+                    <Text style={{ color: /[a-z]/.test(novaSenha) ? 'green' : 'red' }}>
+                        {/[a-z]/.test(novaSenha) ? '✓' : '✗'} Pelo menos uma letra minúscula
+                    </Text>
+                    <Text style={{ color: /\d/.test(novaSenha) ? 'green' : 'red' }}>
+                        {/\d/.test(novaSenha) ? '✓' : '✗'} Pelo menos um número
+                    </Text>
+                    <Text style={{ color: /[@$!%*#?&]/.test(novaSenha) ? 'green' : 'red' }}>
+                        {/[@$!%*#?&]/.test(novaSenha) ? '✓' : '✗'} Caractere especial (@, #, !, etc.)
+                    </Text>
+                </View>,
+                false
+            );
             return;
         }
 
@@ -71,10 +128,17 @@ export default function TelaRedefinirSenha() {
                 senhaUser: novaSenha,
                 confirmarSenhaUser: confirmarSenha,
             });
-            Alert.alert('Sucesso', 'Senha atualizada com sucesso!');
+            // Alert.alert('Sucesso', 'Senha atualizada com sucesso!');
+            
+            mostrarFeedback("Senha atualizada com sucesso!", true)
+            
             setModalSenhaVisible(false);
             setNovaSenha('');
             setConfirmarSenha('');
+            setEmail('');
+            setTimeout(() => {
+            navigation.navigate('Login');
+            }, 2000); 
 
         } catch (error) {
             console.error('Erro ao salvar nova senha:', error);
@@ -87,6 +151,7 @@ export default function TelaRedefinirSenha() {
         setModalSenhaVisible(false);
         setNovaSenha('');
         setConfirmarSenha('');
+        setEmail('')
     }
 
     return (
@@ -105,6 +170,51 @@ export default function TelaRedefinirSenha() {
             <Text style={styles.subtitle}>
                 Informe o e-mail cadastrado para redefinir sua senha.
             </Text>
+
+
+
+
+
+            {/* Modal Personalizado */}
+            <Modal
+                transparent
+                animationType="fade"
+                visible={modalVisibleSucess}
+                onRequestClose={fecharModal}
+            >
+                <View style={styles.modalContainerPersonalizado}>
+                    <View style={styles.modalBoxPersonalizado}>
+                        <Text style={[styles.textoModalPersonalizado, { color: sucesso ? '#00ff00' : '#ff4444' }]}>
+                            {mensagemModal}
+                        </Text>
+                        <TouchableOpacity onPress={fecharModal} style={styles.fecharBotaoPersonalizado}>
+                            <Text style={styles.fecharTextoPersonalizado}>FECHAR</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal Personalizado verificação */}
+            <Modal
+                transparent
+                animationType="fade"
+                visible={modalVisibleSucess2}
+                onRequestClose={fecharModal}
+            >
+                <View style={styles.modalContainerPersonalizado}>
+                    <View style={styles.modalBoxPersonalizado}>
+                        <View style={{ marginBottom: 16 }}>
+                            {conteudoModal}
+                        </View>
+                        <TouchableOpacity onPress={fecharModal2} style={styles.fecharBotaoPersonalizado}>
+                            <Text style={styles.fecharTextoPersonalizado}>FECHAR</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+
+
 
 
             <Modal
@@ -356,6 +466,38 @@ const styles = StyleSheet.create({
         top: 40, // distância do topo (ajustável com SafeAreaView se quiser)
         left: 20,
         zIndex: 999, // para ficar acima de tudo
+    },
+    modalContainerPersonalizado: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalBoxPersonalizado: {
+        backgroundColor: '#1c1c1c',
+        padding: 30,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#d4af37',
+        alignItems: 'center',
+        width: 325
+    },
+    textoModalPersonalizado: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    fecharBotaoPersonalizado: {
+        backgroundColor: '#d4af37',
+        paddingVertical: 10,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+    },
+    fecharTextoPersonalizado: {
+        fontWeight: 'bold',
+        color: '#000',
+        fontSize: 16,
     },
 
 

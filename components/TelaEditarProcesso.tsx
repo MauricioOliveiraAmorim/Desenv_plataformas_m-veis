@@ -40,7 +40,7 @@ export default function TelaEditarProcesso() {
 
 
   const cancelarEdicao = () => {
-    setMensagemModal('Edição cancelada. Nenhuma alteração salva.');
+    setMensagemModal('Nenhum dos campos foi atualizado.');
     setSucesso(false);
     setModalVisibleSucess(true);
 
@@ -86,6 +86,11 @@ export default function TelaEditarProcesso() {
   const atualizarProcesso = async () => {
     if (!nome_process || !numero_process || !tipo_process || !area_process || !status_process) {
       mostrarFeedback('Preencha todos os campos obrigatórios.', false);
+      return;
+    }
+
+    if (nome_process == titulo && numero_process == numero && tipo_process == tipo && area_process == area && status_process == status) {
+      mostrarFeedback('Nenhum dos campos foi atualizado.', false);
       return;
     }
 
